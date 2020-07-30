@@ -20,6 +20,9 @@ func main() {
 	var outputDir string;
 	flag.StringVar(&outputDir, "output", "", "Directory to generate html files")
 
+	var checkString string;
+	flag.StringVar(&checkString, "check-string", "", "Include only files containing check string")
+
 	flag.Parse()
 
 	files, err := ioutil.ReadDir(inputDir)
@@ -44,10 +47,24 @@ func main() {
 			log.Fatal(err)
 		}
 		defer file.Close()
+
 		b, err := ioutil.ReadAll(file)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if (len(b) == 0) {
+			continue
+		}
+
+		content := string(b)
+		if (!strings.Contains(content, checkString)) {
+			continue
+		}
+
 		output := markdown.ToHTML(b, nil, nil)
 
 		output_filename := strings.TrimSuffix(fileName, input_file_extension)
+		output_filename = strings.ReplaceAll(output_filename, " ", "-")
 		ouput_filepath := path.Join(outputDir, output_filename + ".html")
 
 		err = ioutil.WriteFile(ouput_filepath, output, 0644)
