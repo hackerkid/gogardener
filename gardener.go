@@ -87,5 +87,5 @@ func main() {
 		}
 		processedFileCount += 1
 	}
-	fmt.Println(processedFileCount,"/", len(files),  "files processed")
+	fmt.Println(processedFileCount,"/", len(files),  "files 📁 processed")
 }
