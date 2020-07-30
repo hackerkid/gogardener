@@ -23,6 +23,9 @@ func main() {
 	var checkString string;
 	flag.StringVar(&checkString, "check-string", "", "Include only files containing check string")
 
+	var baseTemplatePath string;
+	flag.StringVar(&baseTemplatePath, "base-template", "", "Base template file")
+
 	flag.Parse()
 
 	files, err := ioutil.ReadDir(inputDir)
@@ -57,17 +60,28 @@ func main() {
 		}
 
 		content := string(b)
-		if (!strings.Contains(content, checkString)) {
+		if len(checkString) != 0 && !strings.Contains(content, checkString) {
 			continue
 		}
 
-		output := markdown.ToHTML(b, nil, nil)
+		outputBytes := markdown.ToHTML(b, nil, nil)
+		output := string(outputBytes)
+
+		if (len(baseTemplatePath) != 0) {
+			baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
+			if (err != nil) {
+				log.Fatal(err)
+			}
+
+			baseTemplate := string(baseTemplateBytes)
+			output = strings.ReplaceAll(baseTemplate, "{{ content }}", output)
+		}
 
 		output_filename := strings.TrimSuffix(fileName, input_file_extension)
 		output_filename = strings.ReplaceAll(output_filename, " ", "-")
 		ouput_filepath := path.Join(outputDir, output_filename + ".html")
 
-		err = ioutil.WriteFile(ouput_filepath, output, 0644)
+		err = ioutil.WriteFile(ouput_filepath, []byte(output), 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
