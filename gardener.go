@@ -9,17 +9,29 @@ import (
 	"path"
 	"strings"
 	"path/filepath"
+	"flag"
 )
 
 func main() {
-	files, err := ioutil.ReadDir("./mdfiles")
+
+	var inputDir string;
+	flag.StringVar(&inputDir, "input", "", "Directory of markdown files")
+
+	var outputDir string;
+	flag.StringVar(&outputDir, "output", "", "Directory to generate html files")
+
+	flag.Parse()
+
+	fmt.Println(inputDir)
+
+	files, err := ioutil.ReadDir(inputDir)
 	if (err != nil) {
 		log.Fatal(err)
 	}
 
 	for _, f := range files {
 		fileName := f.Name()
-		input_filepath := path.Join("./mdfiles", fileName)
+		input_filepath := path.Join(inputDir, fileName)
 		file, err := os.Open(input_filepath)
 		if err != nil {
 			log.Fatal(err)
@@ -30,8 +42,8 @@ func main() {
 		output := markdown.ToHTML(b, nil, nil)
 
 		output_filename := strings.TrimSuffix(fileName, filepath.Ext(fileName))
-		ouput_filepath := path.Join("./ouput", output_filename + ".html")
-		
+		ouput_filepath := path.Join(outputDir, output_filename + ".html")
+
 		err = ioutil.WriteFile(ouput_filepath, output, 0644)
 		if err != nil {
 			log.Fatal(err)
