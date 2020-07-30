@@ -22,32 +22,39 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println(inputDir)
-
 	files, err := ioutil.ReadDir(inputDir)
 	if (err != nil) {
 		log.Fatal(err)
 	}
 
+	processedFileCount := 0
+
 	for _, f := range files {
 		fileName := f.Name()
+		input_file_extension := filepath.Ext(fileName)
+		if (input_file_extension != ".md") {
+			fmt.Println("Skipping", fileName)
+			continue
+		}
+
 		input_filepath := path.Join(inputDir, fileName)
+
 		file, err := os.Open(input_filepath)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
-
 		b, err := ioutil.ReadAll(file)
 		output := markdown.ToHTML(b, nil, nil)
 
-		output_filename := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+		output_filename := strings.TrimSuffix(fileName, input_file_extension)
 		ouput_filepath := path.Join(outputDir, output_filename + ".html")
 
 		err = ioutil.WriteFile(ouput_filepath, output, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
+		processedFileCount += 1
 	}
-	fmt.Println("Completed!")
+	fmt.Println(processedFileCount,"/", len(files),  "files processed")
 }
