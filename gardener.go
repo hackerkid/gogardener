@@ -73,6 +73,7 @@ func main() {
 		byteOutput := markdown.ToHTML(byteContent, nil, nil)
 		output := string(byteOutput)
 
+		fileNameWithoutExtension := strings.TrimSuffix(fileName, ".md")
 		if (len(baseTemplatePath) != 0) {
 			baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
 			if (err != nil) {
@@ -81,11 +82,11 @@ func main() {
 
 			baseTemplate := string(baseTemplateBytes)
 			output = strings.ReplaceAll(baseTemplate, "{{ content }}", output)
+			output = strings.ReplaceAll(output, "{{ title }}", fileNameWithoutExtension)
 		}
 
-		output_filename := strings.TrimSuffix(fileName, ".md")
-		output_filename = strings.ReplaceAll(output_filename, " ", "-")
-		ouput_filepath := path.Join(outputDir, output_filename + ".html")
+		htmlFileName := strings.ReplaceAll(fileNameWithoutExtension, " ", "-")
+		ouput_filepath := path.Join(outputDir, htmlFileName + ".html")
 
 		err = ioutil.WriteFile(ouput_filepath, []byte(output), 0644)
 		if err != nil {
