@@ -1,4 +1,4 @@
-# GoGardener
+# GoGardener [WIP]
 
 A blazing fast digital garden generator written in Go. Generates a digital garden from markdown files. Supports markdown files from Roam Research, Obsidian etc.
 
