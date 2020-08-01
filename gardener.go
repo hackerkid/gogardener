@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"os/exec"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -33,8 +32,9 @@ func main() {
 		fmt.Println("You need to speceify an output directory!")
 		os.Exit(1)
 	}
-	// Make sure that the directory is not a parent of current working directory.
-	exec.Command("rm", "-rf", outputDir)
+
+	os.RemoveAll(outputDir)
+	os.MkdirAll(outputDir, 0755)
 
 	files, err := ioutil.ReadDir(inputDir)
 	if (err != nil) {
@@ -81,7 +81,7 @@ func main() {
 		byteOutput := markdown.ToHTML(byteContent, nil, nil)
 		output := string(byteOutput)
 
-		fileNameWithoutExtension := strings.TrimSuffix(fileName, ".md")
+		mdFileNameWithoutExtension := strings.TrimSuffix(fileName, ".md")
 		if (len(baseTemplatePath) != 0) {
 			baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
 			if (err != nil) {
@@ -90,11 +90,11 @@ func main() {
 
 			baseTemplate := string(baseTemplateBytes)
 			output = strings.ReplaceAll(baseTemplate, "{{ content }}", output)
-			output = strings.ReplaceAll(output, "{{ title }}", fileNameWithoutExtension)
+			output = strings.ReplaceAll(output, "{{ title }}", mdFileNameWithoutExtension)
 		}
 
-		htmlFileName := strings.ReplaceAll(fileNameWithoutExtension, " ", "-")
-		ouput_filepath := path.Join(outputDir, htmlFileName + ".html")
+		htmlFileName := strings.ToLower(strings.ReplaceAll(mdFileNameWithoutExtension, " ", "-")) + ".html"
+		ouput_filepath := path.Join(outputDir, htmlFileName)
 
 		err = ioutil.WriteFile(ouput_filepath, []byte(output), 0644)
 		if err != nil {
