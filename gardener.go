@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -27,6 +28,13 @@ func main() {
 	flag.StringVar(&baseTemplatePath, "base-template", "", "Base template file")
 
 	flag.Parse()
+
+	if (len(outputDir) == 0) {
+		fmt.Println("You need to speceify an output directory!")
+		os.Exit(1)
+	}
+	// Make sure that the directory is not a parent of current working directory.
+	exec.Command("rm", "-rf", outputDir)
 
 	files, err := ioutil.ReadDir(inputDir)
 	if (err != nil) {
