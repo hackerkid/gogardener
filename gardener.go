@@ -34,6 +34,7 @@ func main() {
 	}
 
 	processedFileCount := 0
+	fileNameToContentMap := make(map[string][]byte)
 
 	for _, f := range files {
 		fileName := f.Name()
@@ -64,8 +65,13 @@ func main() {
 			continue
 		}
 
-		outputBytes := markdown.ToHTML(b, nil, nil)
-		output := string(outputBytes)
+		fileNameToContentMap[fileName] = b
+
+	}
+
+	for fileName, byteContent := range fileNameToContentMap {
+		byteOutput := markdown.ToHTML(byteContent, nil, nil)
+		output := string(byteOutput)
 
 		if (len(baseTemplatePath) != 0) {
 			baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
@@ -77,7 +83,7 @@ func main() {
 			output = strings.ReplaceAll(baseTemplate, "{{ content }}", output)
 		}
 
-		output_filename := strings.TrimSuffix(fileName, input_file_extension)
+		output_filename := strings.TrimSuffix(fileName, ".md")
 		output_filename = strings.ReplaceAll(output_filename, " ", "-")
 		ouput_filepath := path.Join(outputDir, output_filename + ".html")
 
