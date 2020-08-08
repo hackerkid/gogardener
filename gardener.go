@@ -10,7 +10,7 @@ import (
 	"strings"
 	"path/filepath"
 	"flag"
-	//"regexp"
+	"regexp"
 )
 
 func getMDFileNameWithoutExtension(fileName string) string {
@@ -20,6 +20,16 @@ func getMDFileNameWithoutExtension(fileName string) string {
 func getHTMLFilePathFromFileName(fileName string) string {
 	var mdFileNameWithoutExtension = getMDFileNameWithoutExtension(fileName)
 	return strings.ToLower(strings.ReplaceAll(mdFileNameWithoutExtension, " ", "-")) + ".html"
+}
+
+func getLinksFromContent(content string) []string {
+	re := regexp.MustCompile(`\[([^\[\]]*)\]`)
+	matches := re.FindAllStringSubmatch(content, -1)
+	var links []string
+	for _, match := range matches {
+		links = append(links, match[1])
+	}
+	return links
 }
 
 func main() {
@@ -53,7 +63,7 @@ func main() {
 
 	processedFileCount := 0
 	fileNameToContentMap := make(map[string][]byte)
-	//backLinksMap := make(map[string][]string)
+	backLinksMap := make(map[string][]string)
 
 	for _, f := range files {
 		fileName := f.Name()
@@ -83,11 +93,12 @@ func main() {
 			continue
 		}
 
-		//re := regexp.MustCompile(`\[.+\]`)
-		//fmt.Printf("%q\n", re.FindAll([]byte(content), -1))
-
-		fileNameToContentMap[fileName] = b
-
+		links := getLinksFromContent(content)
+		for _, link := range links {
+			backLinksMap[link] = append(backLinksMap[link], fileName)
+		}
+		mdFileNameWithoutExtension := getMDFileNameWithoutExtension(fileName)
+		fileNameToContentMap[mdFileNameWithoutExtension] = b
 	}
 	
 	baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
@@ -95,20 +106,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for fileName, byteContent := range fileNameToContentMap {
+	for mdFileNameWithoutExtension, byteContent := range fileNameToContentMap {
 		byteOutput := markdown.ToHTML(byteContent, nil, nil)
-		output := string(byteOutput)
-
-		mdFileNameWithoutExtension := getMDFileNameWithoutExtension(fileName)
+		postContentOutput := string(byteOutput)
 
 		baseTemplate := string(baseTemplateBytes)
-		output = strings.ReplaceAll(baseTemplate, "{{ content }}", output)
-		output = strings.ReplaceAll(output, "{{ title }}", mdFileNameWithoutExtension)
+		postPageOutput := strings.ReplaceAll(baseTemplate, "{{ content }}", postContentOutput)
+		postPageOutput = strings.ReplaceAll(postPageOutput, "{{ title }}", mdFileNameWithoutExtension)
+		links := getLinksFromContent(postPageOutput)
+		for _, link := range links {
+			markdownLink := fmt.Sprintf("[[%s]]", link)
+			htmlLink := link
+			if wow, ok := fileNameToContentMap[link]; ok {
+				htmlLink = fmt.Sprintf("<a href='%s'>%s</a>", getHTMLFilePathFromFileName(link), link)
+			}
+			postPageOutput = strings.ReplaceAll(postPageOutput, markdownLink, htmlLink)
+		}
 
 		htmlFileName := strings.ToLower(strings.ReplaceAll(mdFileNameWithoutExtension, " ", "-")) + ".html"
 		ouput_filepath := path.Join(outputDir, htmlFileName)
 
-		err = ioutil.WriteFile(ouput_filepath, []byte(output), 0644)
+		err = ioutil.WriteFile(ouput_filepath, []byte(postPageOutput), 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -132,4 +150,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(processedFileCount)
 }
