@@ -66,11 +66,11 @@ func processMarkdownFiles(inputDir string, checkString string, fileNameToContent
 			continue
 		}
 
+		mdFileNameWithoutExtension := getMDFileNameWithoutExtension(fileName)
 		links := getLinksFromContent(content)
 		for _, link := range links {
-			backLinksMap[link] = append(backLinksMap[link], fileName)
+			backLinksMap[link] = append(backLinksMap[link], mdFileNameWithoutExtension)
 		}
-		mdFileNameWithoutExtension := getMDFileNameWithoutExtension(fileName)
 		fileNameToContentMap[mdFileNameWithoutExtension] = b
 	}
 }
