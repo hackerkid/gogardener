@@ -32,38 +32,11 @@ func getLinksFromContent(content string) []string {
 	return links
 }
 
-func main() {
-
-	var inputDir string;
-	flag.StringVar(&inputDir, "input", "", "Directory of markdown files")
-
-	var outputDir string;
-	flag.StringVar(&outputDir, "output", "", "Directory to generate html files")
-
-	var checkString string;
-	flag.StringVar(&checkString, "check-string", "", "Include only files containing check string")
-
-	var baseTemplatePath string;
-	flag.StringVar(&baseTemplatePath, "base-template", "", "Base template file")
-
-	flag.Parse()
-
-	if (len(outputDir) == 0) {
-		fmt.Println("You need to speceify an output directory!")
-		os.Exit(1)
-	}
-
-	os.RemoveAll(outputDir)
-	os.MkdirAll(outputDir, 0755)
-
+func processMarkdownFiles(inputDir string, checkString string, fileNameToContentMap map[string][]byte, backLinksMap map[string][]string) {
 	files, err := ioutil.ReadDir(inputDir)
 	if (err != nil) {
 		log.Fatal(err)
 	}
-
-	processedFileCount := 0
-	fileNameToContentMap := make(map[string][]byte)
-	backLinksMap := make(map[string][]string)
 
 	for _, f := range files {
 		fileName := f.Name()
@@ -100,6 +73,35 @@ func main() {
 		mdFileNameWithoutExtension := getMDFileNameWithoutExtension(fileName)
 		fileNameToContentMap[mdFileNameWithoutExtension] = b
 	}
+}
+
+func main() {
+	var inputDir string;
+	flag.StringVar(&inputDir, "input", "", "Directory of markdown files")
+
+	var outputDir string;
+	flag.StringVar(&outputDir, "output", "", "Directory to generate html files")
+
+	var checkString string;
+	flag.StringVar(&checkString, "check-string", "", "Include only files containing check string")
+
+	var baseTemplatePath string;
+	flag.StringVar(&baseTemplatePath, "base-template", "", "Base template file")
+
+	flag.Parse()
+
+	if (len(outputDir) == 0) {
+		fmt.Println("You need to speceify an output directory!")
+		os.Exit(1)
+	}
+
+	os.RemoveAll(outputDir)
+	os.MkdirAll(outputDir, 0755)
+
+	fileNameToContentMap := make(map[string][]byte)
+	backLinksMap := make(map[string][]string)
+	processMarkdownFiles(inputDir, checkString, fileNameToContentMap, backLinksMap)
+	processedFileCount := 0
 	
 	baseTemplateBytes, err := ioutil.ReadFile(baseTemplatePath)
 	if (err != nil) {
@@ -117,8 +119,9 @@ func main() {
 		for _, link := range links {
 			markdownLink := fmt.Sprintf("[[%s]]", link)
 			htmlLink := link
-			if wow, ok := fileNameToContentMap[link]; ok {
+			if _, ok := fileNameToContentMap[link]; ok {
 				htmlLink = fmt.Sprintf("<a href='%s'>%s</a>", getHTMLFilePathFromFileName(link), link)
+				fmt.Println(getHTMLFilePathFromFileName(link), link)
 			}
 			postPageOutput = strings.ReplaceAll(postPageOutput, markdownLink, htmlLink)
 		}
