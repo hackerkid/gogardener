@@ -1,11 +1,7 @@
-* Make backlinks work
-    * Fetch the links the in the page
-    * Store them in backlink dict
 
-* Don't delete the files in .git folder
+* Don't delete the directory. Only delete the .html files.
 * Make tags work
 * Make images work.
-* Figure out whether to store the generated files in the same repo as markdown files
 * See how to go install packages from GitHub
 
 ---------------------------------
@@ -19,3 +15,8 @@
     * Get the HTML path from file name
     * Create unordered list of links
     * Paste them inside baseHtml
+* Make backlinks work
+    * Fetch the links the in the page
+    * Store them in backlink dict
+* Figure out whether to store the generated files in the same repo as markdown files
+    Can't store in the same repo since it can't be made public.
