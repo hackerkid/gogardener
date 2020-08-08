@@ -2,6 +2,8 @@
 
 A blazing fast cli for generating digital garden from markdown files. Supports markdown files exported from Roam Research, Obsidian etc.
 
+Demo at https://vishnuks.com/garden/
+
 ## Installation
 
 ```bash
