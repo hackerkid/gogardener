@@ -128,7 +128,6 @@ func main() {
 		backLinksHTML := "\n<h3>Backlinks</h3>\n<ul>\n"
 		backLinks := backLinksMap[mdFileNameWithoutExtension]
 		for _, backLink := range backLinks {
-			fmt.Println(mdFileNameWithoutExtension)
 			backLinksHTML += fmt.Sprintf("<li><a href='%s'>%s</a></li>\n", getHTMLFilePathFromFileName(backLink), backLink)
 		}
 
@@ -161,5 +160,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(processedFileCount)
+	fmt.Println(processedFileCount, "files 📁 processed")
 }
