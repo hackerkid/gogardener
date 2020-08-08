@@ -121,10 +121,18 @@ func main() {
 			htmlLink := link
 			if _, ok := fileNameToContentMap[link]; ok {
 				htmlLink = fmt.Sprintf("<a href='%s'>%s</a>", getHTMLFilePathFromFileName(link), link)
-				fmt.Println(getHTMLFilePathFromFileName(link), link)
 			}
 			postPageOutput = strings.ReplaceAll(postPageOutput, markdownLink, htmlLink)
 		}
+
+		backLinksHTML := "\n<h3>Backlinks</h3>\n<ul>\n"
+		backLinks := backLinksMap[mdFileNameWithoutExtension]
+		for _, backLink := range backLinks {
+			fmt.Println(mdFileNameWithoutExtension)
+			backLinksHTML += fmt.Sprintf("<li><a href='%s'>%s</a></li>\n", getHTMLFilePathFromFileName(backLink), backLink)
+		}
+
+		postPageOutput += (backLinksHTML + "\n</ul>")
 
 		htmlFileName := strings.ToLower(strings.ReplaceAll(mdFileNameWithoutExtension, " ", "-")) + ".html"
 		ouput_filepath := path.Join(outputDir, htmlFileName)
